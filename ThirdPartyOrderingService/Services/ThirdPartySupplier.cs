@@ -18,13 +18,13 @@ namespace ThirdPartyOrderingService.Services
     {
         protected string _Url;
         protected HttpClient _Client;
-        private readonly OrderContext _context;
+        private readonly DBService _dbs;
 
-        public ThirdPartySupplier(string url, HttpClient HttpClient, OrderContext context)
+        public ThirdPartySupplier(string url, HttpClient HttpClient, DBService dbs)
         {
             _Url = url;
             _Client = HttpClient;
-            _context = context;
+            _dbs = dbs;
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace ThirdPartyOrderingService.Services
                     order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
                     order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
                     order.TotalPrice = (decimal)JObject.Parse(responseBody)["TotalPrice"];
-                    SetOrder(order);
+                    _dbs.SetOrder(order);
 
                     return new OkResult();
                 }
@@ -85,7 +85,7 @@ namespace ThirdPartyOrderingService.Services
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
-                    DeleteOrder(OrderID);
+                    _dbs.DeleteOrder(OrderID);
                     return new OkResult();
                 }
             } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
@@ -135,68 +135,10 @@ namespace ThirdPartyOrderingService.Services
 
         }
 
-        /// <summary>
-        /// Deletes the order stored in the local SQL store
-        /// </summary>
-        /// <param name="OrderID"></param>
-        /// <returns></returns>
-        public IActionResult DeleteOrder(int OrderID)
-        {
-            Order order;
-            try
-            {
-                 order = _context.Orders.Find(OrderID);
-                _context.Orders.Remove(order);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
-            return new OkResult();
-        }
+ 
 
-        /// <summary>
-        /// Sets the order stored in the local SQL store
-        /// </summary>
-        /// <param name="Order"></param>
-        /// <returns></returns>
-        private IActionResult SetOrder(Order order)
-        {
-            try
-            {
-                _context.Orders.Add(order);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
-            return new OkResult();
-        }
+       // http://dodgydealers.azurewebsites.net/"
 
-        /// <summary>
-        /// Gets the order stored in the local SQL store
-        /// </summary>
-        /// <param name="OrderID"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> GetOrder(int OrderID)
-        {
-            Order order = new Order();
-            try
-            {
-                order =  _context.Orders.Find(OrderID);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
-            return new OkObjectResult(order.GetAll());
-        }
-
-
-        http://dodgydealers.azurewebsites.net/"
-
-            http://undercutters.azurewebsites.net/
-
+       // http://undercutters.azurewebsites.net/
     } 
 }

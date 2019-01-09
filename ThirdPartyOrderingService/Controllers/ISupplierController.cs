@@ -11,7 +11,7 @@ namespace ThirdPartyOrderingService.Controllers
     {
         Task<IActionResult> Order([FromBody]Order order);
 
-        IActionResult GetOrderById([FromBody] int OrderID);
+        Task<IActionResult> GetOrderById([FromBody] int OrderID);
 
         Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID);
     }

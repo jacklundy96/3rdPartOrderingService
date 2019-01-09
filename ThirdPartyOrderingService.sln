@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2050
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThirdPartyOrderingService", "ThirdPartyOrderingService\ThirdPartyOrderingService.csproj", "{D964112B-F0AA-4BA5-AFEB-D27C4985CB66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdPartyOrderingServiceTest", "BazzasBazaarServiceTest\ThirdPartyOrderingServiceTest.csproj", "{1E4B5A07-FCAC-4AA5-876A-CF33E800438B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D964112B-F0AA-4BA5-AFEB-D27C4985CB66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D964112B-F0AA-4BA5-AFEB-D27C4985CB66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D964112B-F0AA-4BA5-AFEB-D27C4985CB66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E4B5A07-FCAC-4AA5-876A-CF33E800438B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E4B5A07-FCAC-4AA5-876A-CF33E800438B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E4B5A07-FCAC-4AA5-876A-CF33E800438B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E4B5A07-FCAC-4AA5-876A-CF33E800438B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

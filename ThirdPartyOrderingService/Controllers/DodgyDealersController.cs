@@ -27,20 +27,42 @@ namespace ThirdPartyOrderingService.Controllers
         //[Authorize(Roles = "Staff"]
         public async Task<IActionResult> Order([FromBody]Order order)
         {
-            order.SupplierName = SupplierName;
-            return await _dds.MakeOrderAsync(order);
+            try
+            {
+                order.SupplierName = SupplierName;
+                return await _dds.MakeOrderAsync(order);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpGet("Orders")]
-        public IActionResult GetOrderById([FromBody] int OrderID)
+        public async Task<IActionResult> GetOrderById([FromBody] int OrderID)
         {
-            return _dds.GetOrder(OrderID);
+            try
+            {
+                return await _dds.GetOrder(OrderID);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpDelete("Orders")]
-        public Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
+        public async Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
         {
-            return _dds.DeleteOrderAsync(OrderID);
+            try
+            {
+                return await _dds.DeleteOrderAsync(OrderID);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
         }
+
     }
 }

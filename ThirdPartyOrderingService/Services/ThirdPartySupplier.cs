@@ -16,7 +16,6 @@ namespace ThirdPartyOrderingService.Services
 
     public abstract class ThirdPartySupplier
     {
-
         protected string _Url;
         protected HttpClient _Client;
         private readonly OrderContext _context;
@@ -55,19 +54,19 @@ namespace ThirdPartyOrderingService.Services
 
                 if (response.StatusCode == HttpStatusCode.Created)
                 {
-                    //Probably should find another way that means not parsing multiple times
-                    //Add order information to be stored locally
                     order.OrderId = (int)JObject.Parse(responseBody)["Id"];
                     order.When = (DateTime)JObject.Parse(responseBody)["When"];
                     order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
                     order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
                     order.TotalPrice = (decimal)JObject.Parse(responseBody)["TotalPrice"];
-                    return SetOrder(order);
+                    SetOrder(order);
+
+                    return new OkResult();
                 }
 
             } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
 
-                return new StatusCodeResult(500);
+            return new StatusCodeResult(500);
         }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace ThirdPartyOrderingService.Services
             Order order;
             try
             {
-                order = _context.Orders.Find(OrderID);
+                 order = _context.Orders.Find(OrderID);
                 _context.Orders.Remove(order);
             }
             catch (Exception ex)
@@ -180,12 +179,12 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="OrderID"></param>
         /// <returns></returns>
-        public IActionResult GetOrder(int OrderID)
+        public async Task<IActionResult> GetOrder(int OrderID)
         {
             Order order = new Order();
             try
             {
-                order = _context.Orders.Find(OrderID);
+                order =  _context.Orders.Find(OrderID);
             }
             catch (Exception ex)
             {
@@ -193,6 +192,11 @@ namespace ThirdPartyOrderingService.Services
             }
             return new OkObjectResult(order.GetAll());
         }
+
+
+        http://dodgydealers.azurewebsites.net/"
+
+            http://undercutters.azurewebsites.net/
 
     } 
 }

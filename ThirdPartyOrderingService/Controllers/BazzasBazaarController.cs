@@ -14,34 +14,34 @@ namespace ThirdPartyOrderingService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Staff"]
-    public class UnderCuttersController : ControllerBase,ISupplierController
+    public class BazzasBazaarController : ControllerBase, ISupplierController
     {
-        private Services.UnderCuttersService _ucs;
-        private readonly string SupplierName = "UnderCutters";
+        private Services.BazzasBazaarService _bbs;
+        private readonly string SupplierName = "BazzasBazaar";
 
-        public UnderCuttersController(IUnderCutterService Ucs)
+        public BazzasBazaarController(IBazzasBazaarService bbs)
         {
-            _ucs = (UnderCuttersService)Ucs;
+            _bbs = (BazzasBazaarService)bbs;
         }
 
         [HttpPost("Order")]
-        public async Task <IActionResult> Order([FromBody]Order order)
+        public async Task<IActionResult> Order([FromBody]Order order)
         {
             order.SupplierName = SupplierName;
-            return await _ucs.MakeOrderAsync(order);
+            return await _bbs.MakeOrderAsync(order);
         }
 
-        [HttpGet("Orders")]
+        [HttpGet("Orders/{id}")]
         public Task<IActionResult> GetOrderById([FromBody] int OrderID)
         {
-            return _ucs.GetOrder(OrderID);
+            return _bbs.GetOrder(OrderID);
         }
 
         [HttpDelete("Orders")]
         public async Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
         {
-            return await _ucs.DeleteOrderAsync(OrderID);
+            return await _bbs.DeleteOrderAsync(OrderID);
         }
+
     }
 }

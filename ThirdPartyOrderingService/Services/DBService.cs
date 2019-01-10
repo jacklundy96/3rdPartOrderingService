@@ -23,16 +23,9 @@ namespace ThirdPartyOrderingService.Services
         /// <returns></returns>
         public IActionResult DeleteOrder(int OrderID)
         {
-            Order order;
-            try
-            {
-                order = _context.Orders.Find(OrderID);
-                _context.Orders.Remove(order);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
+            Order order = _context.Orders.Find(OrderID);
+            _context.Orders.Remove(order);
+
             return new OkResult();
         }
 
@@ -43,15 +36,10 @@ namespace ThirdPartyOrderingService.Services
         /// <returns></returns>
         public IActionResult SetOrder(Order order)
         {
-            try
-            {
-                _context.Orders.Add(order);
-                _context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
+
+            _context.Orders.Add(order);
+            _context.SaveChanges();
+
             return new OkResult();
         }
 
@@ -62,16 +50,9 @@ namespace ThirdPartyOrderingService.Services
         /// <returns></returns>
         public async Task<IActionResult> GetOrder(int OrderID)
         {
-            Order order = new Order();
-            try
-            {
-                order = _context.Orders.Find(OrderID);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
-            return new OkObjectResult(order.GetAll());
+            Order order = _context.Orders.Find(OrderID);
+
+            return new JsonResult(order.GetAll());
         }
 
     }

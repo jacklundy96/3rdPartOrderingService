@@ -15,53 +15,38 @@ namespace ThirdPartyOrderingService.Controllers
     //[Authorize(Roles = "Staff"]
     public class DodgyDealersController : ControllerBase, ISupplierController
     {
-        private Services.DodgyDealersService _dds;
+        private Services.ThirdPartySupplierService _tts;
         private readonly string SupplierName = "DodgyDealers";
 
-        public DodgyDealersController(IDodgyDealersService Dds)
+        public DodgyDealersController(ThirdPartySupplierService Tts)
         {
-            _dds = (DodgyDealersService)Dds;
+            _tts = Tts;
         }
 
         [HttpPost("Order")]
         //[Authorize(Roles = "Staff"]
         public async Task<IActionResult> Order([FromBody]Order order)
         {
-            try
-            {
-                order.SupplierName = SupplierName;
-                return await _dds.MakeOrderAsync(order);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
+
+            order.SupplierName = SupplierName;
+            return await _tts.MakeOrderAsync(order);
+
         }
 
         [HttpGet("Orders")]
         public async Task<IActionResult> GetOrderById([FromBody] int OrderID)
         {
-            try
-            {
-                return await _dds.GetOrder(OrderID);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
+
+            return await _tts.GetOrderAsync(OrderID);
+
         }
 
         [HttpDelete("Orders")]
         public async Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
         {
-            try
-            {
-                return await _dds.DeleteOrderAsync(OrderID);
-            }
-            catch (Exception ex)
-            {
-                return new StatusCodeResult(500);
-            }
+
+            return await _tts.DeleteOrderAsync(OrderID);
+
         }
 
     }

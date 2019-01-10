@@ -36,9 +36,7 @@ namespace ThirdPartyOrderingService
             HttpClient httpClient = new HttpClient();
             services.AddSingleton<HttpClient>(httpClient);
 
-            services.AddTransient<Services.IDodgyDealersService, Services.DodgyDealersService>();
-            services.AddTransient<Services.IBazzasBazaarService, Services.BazzasBazaarService>();
-            services.AddTransient<Services.IUnderCutterService, Services.UnderCuttersService>();
+            services.AddTransient<Services.IThirdPartySupplierService, Services.ThirdPartySupplierService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

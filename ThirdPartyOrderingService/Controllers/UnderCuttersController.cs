@@ -17,31 +17,31 @@ namespace ThirdPartyOrderingService.Controllers
     //[Authorize(Roles = "Staff"]
     public class UnderCuttersController : ControllerBase,ISupplierController
     {
-        private Services.UnderCuttersService _ucs;
+        private ThirdPartySupplierService _tts;
         private readonly string SupplierName = "UnderCutters";
 
-        public UnderCuttersController(IUnderCutterService Ucs)
+        public UnderCuttersController(ThirdPartySupplierService Tts)
         {
-            _ucs = (UnderCuttersService)Ucs;
+            _tts = Tts;
         }
 
         [HttpPost("Order")]
         public async Task <IActionResult> Order([FromBody]Order order)
         {
             order.SupplierName = SupplierName;
-            return await _ucs.MakeOrderAsync(order);
+            return await _tts.MakeOrderAsync(order);
         }
 
         [HttpGet("Orders")]
-        public Task<IActionResult> GetOrderById([FromBody] int OrderID)
+        public async Task<IActionResult> GetOrderById([FromBody] int OrderID)
         {
-            return _ucs.GetOrder(OrderID);
+            return await _tts.GetOrderAsync(OrderID);
         }
 
         [HttpDelete("Orders")]
         public async Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
         {
-            return await _ucs.DeleteOrderAsync(OrderID);
+            return await _tts.DeleteOrderAsync(OrderID);
         }
     }
 }

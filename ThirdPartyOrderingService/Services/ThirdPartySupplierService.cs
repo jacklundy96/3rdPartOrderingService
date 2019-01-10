@@ -13,14 +13,20 @@ using Newtonsoft.Json.Linq;
 
 namespace ThirdPartyOrderingService.Services
 {
-
-    public abstract class ThirdPartySupplier
+    public interface IThirdPartySupplierService
+    {
+        Task<IActionResult> MakeOrderAsync(Order order);
+        Task<IActionResult> DeleteOrderAsync(int OrderID);
+        Task<IActionResult> GetOrderAsync(int OrderID);
+    }
+    public class ThirdPartySupplierService : IThirdPartySupplierService
     {
         protected string _Url;
         protected HttpClient _Client;
         private readonly DBService _dbs;
+        public string url; 
 
-        public ThirdPartySupplier(string url, HttpClient HttpClient, DBService dbs)
+        public ThirdPartySupplierService( HttpClient HttpClient, DBService dbs)
         {
             _Url = url;
             _Client = HttpClient;
@@ -33,7 +39,7 @@ namespace ThirdPartyOrderingService.Services
         /// <param name="order">order object to be submitted to the api</param>
         /// <param name="supplierName">The name of the supplier recieving the order</param>
         /// <returns></returns>
-        public virtual async Task<IActionResult> MakeOrderAsync(Order order)
+        public async Task<IActionResult> MakeOrderAsync(Order order)
         {
             var values = new Dictionary<string, string>
             {
@@ -134,11 +140,5 @@ namespace ThirdPartyOrderingService.Services
             return new ObjectResult(new { StatusCode = 500, Message = JObject.Parse(responseBody)["Message"].ToString() });
 
         }
-
- 
-
-       // http://dodgydealers.azurewebsites.net/"
-
-       // http://undercutters.azurewebsites.net/
     } 
 }

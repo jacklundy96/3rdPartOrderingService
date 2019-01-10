@@ -4,31 +4,30 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ThirdPartyOrderingService.Dtos;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 
 namespace ThirdPartyOrderingService.Services
 {
     public interface IThirdPartySupplierService
     {
-        Task<IActionResult> MakeOrderAsync(Order order);
-        Task<IActionResult> DeleteOrderAsync(int OrderID);
-        Task<IActionResult> GetOrderAsync(int OrderID);
+        Task<IActionResult> MakeOrderAsync(Order order, string url,string supplierName);
+        Task<IActionResult> DeleteOrderAsync(int OrderID, string url);
+        Task<IActionResult> GetOrderAsync(int OrderID, string url,string supplierName);
     }
     public class ThirdPartySupplierService : IThirdPartySupplierService
     {
-        protected string _Url;
         protected HttpClient _Client;
         private readonly DBService _dbs;
-        public string url; 
 
         public ThirdPartySupplierService( HttpClient HttpClient, DBService dbs)
         {
-            _Url = url;
             _Client = HttpClient;
             _dbs = dbs;
         }
@@ -39,40 +38,47 @@ namespace ThirdPartyOrderingService.Services
         /// <param name="order">order object to be submitted to the api</param>
         /// <param name="supplierName">The name of the supplier recieving the order</param>
         /// <returns></returns>
-        public async Task<IActionResult> MakeOrderAsync(Order order)
+        public async Task<IActionResult> MakeOrderAsync(Order order, string url,string supplierName)
         {
-            var values = new Dictionary<string, string>
+            try
             {
-               { "AccountName", order.AccountName },
-               { "CardNumber", order.CardNumber },
-               { "ProductId", order.ProductId.ToString() },
-               { "Quantity", order.Quantity.ToString() }
-            };
 
-            HttpResponseMessage response;
-            do
-            {
-                var content = new FormUrlEncodedContent(values);
-                response = await _Client.PostAsync(_Url + "api/Order", content);
-
-                string responseBody = await response.Content.ReadAsStringAsync();
-                JObject o = JObject.Parse(responseBody);
-
-                if (response.StatusCode == HttpStatusCode.Created)
+                var values = new Dictionary<string, string>
                 {
-                    order.OrderId = (int)JObject.Parse(responseBody)["Id"];
-                    order.When = (DateTime)JObject.Parse(responseBody)["When"];
-                    order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
-                    order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
-                    order.TotalPrice = (decimal)JObject.Parse(responseBody)["TotalPrice"];
-                    _dbs.SetOrder(order);
+                    {"AccountName", order.AccountName},
+                    {"CardNumber", order.CardNumber},
+                    {"ProductId", order.ProductId.ToString()},
+                    {"Quantity", order.Quantity.ToString()}
+                };
 
-                    return new OkResult();
-                }
+                HttpResponseMessage response;
+                do
+                {
+                    var content = new FormUrlEncodedContent(values);
+                    response = await _Client.PostAsync(url + "api/Order", content);
 
-            } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
+                    string responseBody = await response.Content.ReadAsStringAsync();
 
-            return new StatusCodeResult(500);
+                    if (response.StatusCode == HttpStatusCode.Created)
+                    {
+                        order.OrderId = (int) JObject.Parse(responseBody)["Id"];
+                        order.When = (DateTime) JObject.Parse(responseBody)["When"];
+                        order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
+                        order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
+                        order.TotalPrice = (decimal) JObject.Parse(responseBody)["TotalPrice"];
+                        order.SupplierName = supplierName;
+                        _dbs.SetOrder(order);
+
+                        return new OkResult();
+                    }
+
+                } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
+            }
+            catch (Exception ex)
+            {
+                return new StatusCodeResult(500);
+            }
+            return new OkResult();
         }
 
         /// <summary>
@@ -80,9 +86,9 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="OrderID">The order reference as per each supplier</param>
         /// <returns></returns>
-        public async Task<IActionResult> DeleteOrderAsync(int OrderID)
+        public async Task<IActionResult> DeleteOrderAsync(int OrderID, string url)
         {
-            string url = string.Format($"{0}/{1}/{OrderID}", _Url, "api/Order", OrderID.ToString());
+            string _url = string.Format($"{url}/api/Order/{OrderID}");
 
             HttpResponseMessage response;
             do
@@ -106,39 +112,14 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="OrderID"></param>
         /// <returns></returns>
-        public async Task<IActionResult> GetOrderAsync(int OrderID)
+        public async Task<IActionResult> GetOrderAsync(int OrderID, string url, string supplierName)
         {
-            string url = string.Format($"{0}/{1}/{OrderID}", _Url, "api/Order", OrderID.ToString());
+            Order order = _dbs.GetOrder(OrderID);
 
-            HttpResponseMessage response;
-            string responseBody; 
-            do
-            {
-                response = await _Client.GetAsync(url);
-
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    responseBody = await response.Content.ReadAsStringAsync();
-
-                    JObject j = new JObject();
-                    j.Add("Id", JObject.Parse(responseBody)["Id"].ToString());
-                    j.Add("ProductId", JObject.Parse(responseBody)["ProductId"].ToString());
-                    j.Add("Quantity", JObject.Parse(responseBody)["Quantity"].ToString());
-                    j.Add("When", JObject.Parse(responseBody)["When"].ToString());
-                    j.Add("ProductName", JObject.Parse(responseBody)["ProductName"].ToString());
-                    j.Add("ProductEan", JObject.Parse(responseBody)["ProductEan"].ToString());
-                    j.Add("TotalPrice", JObject.Parse(responseBody)["TotalPrice"].ToString());
-
-                    return new ObjectResult(new
-                    { StatusCode = 500,
-                        Message = j.ToString()
-                    });
-                }
-            } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
-
-            responseBody = await response.Content.ReadAsStringAsync();
-            return new ObjectResult(new { StatusCode = 500, Message = JObject.Parse(responseBody)["Message"].ToString() });
-
+            if (order != null && order.SupplierName.Equals(supplierName))
+                return new JsonResult(order);
+            else
+                return new NotFoundResult();
         }
     } 
 }

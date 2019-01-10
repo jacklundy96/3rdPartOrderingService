@@ -21,12 +21,10 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="OrderID"></param>
         /// <returns></returns>
-        public IActionResult DeleteOrder(int OrderID)
+        public void DeleteOrder(int OrderID)
         {
             Order order = _context.Orders.Find(OrderID);
             _context.Orders.Remove(order);
-
-            return new OkResult();
         }
 
         /// <summary>
@@ -34,13 +32,10 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="Order"></param>
         /// <returns></returns>
-        public IActionResult SetOrder(Order order)
+        public void SetOrder(Order order)
         {
-
             _context.Orders.Add(order);
             _context.SaveChanges();
-
-            return new OkResult();
         }
 
         /// <summary>
@@ -48,11 +43,10 @@ namespace ThirdPartyOrderingService.Services
         /// </summary>
         /// <param name="OrderID"></param>
         /// <returns></returns>
-        public async Task<IActionResult> GetOrder(int OrderID)
+        public Order GetOrder(int OrderID)
         {
-            Order order = _context.Orders.Find(OrderID);
-
-            return new JsonResult(order.GetAll());
+            Order order = _context.Orders.FirstOrDefault(o => o.OrderId == OrderID);
+            return order;
         }
 
     }

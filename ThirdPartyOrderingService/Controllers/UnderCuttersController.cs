@@ -15,12 +15,13 @@ namespace ThirdPartyOrderingService.Controllers
     [Route("api/[controller]")]
     [ApiController]
     //[Authorize(Roles = "Staff"]
-    public class UnderCuttersController : ControllerBase,ISupplierController
+    public class UnderCuttersController : ControllerBase
     {
-        private ThirdPartySupplierService _tts;
+        private IThirdPartySupplierService _tts;
         private readonly string SupplierName = "UnderCutters";
+        private string _url = "http://undercutters.azurewebsites.net/";
 
-        public UnderCuttersController(ThirdPartySupplierService Tts)
+        public UnderCuttersController(IThirdPartySupplierService Tts)
         {
             _tts = Tts;
         }
@@ -29,19 +30,19 @@ namespace ThirdPartyOrderingService.Controllers
         public async Task <IActionResult> Order([FromBody]Order order)
         {
             order.SupplierName = SupplierName;
-            return await _tts.MakeOrderAsync(order);
+            return await _tts.MakeOrderAsync(order, _url, SupplierName);
         }
 
-        [HttpGet("Orders")]
-        public async Task<IActionResult> GetOrderById([FromBody] int OrderID)
+        [HttpGet("Orders/Get/{OrderID}")]
+        public async Task<IActionResult> GetOrderById(int OrderID)
         {
-            return await _tts.GetOrderAsync(OrderID);
+            return await _tts.GetOrderAsync(OrderID, _url,SupplierName);
         }
 
-        [HttpDelete("Orders")]
-        public async Task<IActionResult> DeleteOrderAsync([FromBody] int OrderID)
+        [HttpDelete("Order/{OrderID}")]
+        public async Task<IActionResult> DeleteOrderAsync(int OrderID)
         {
-            return await _tts.DeleteOrderAsync(OrderID);
+            return await _tts.DeleteOrderAsync(OrderID, _url);
         }
     }
 }

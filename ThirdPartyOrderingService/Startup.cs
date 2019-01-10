@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ThirdPartyOrderingService.Services;
 
 namespace ThirdPartyOrderingService
 {
@@ -30,12 +31,13 @@ namespace ThirdPartyOrderingService
             services.AddDbContext<OrderContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
          
-
            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             HttpClient httpClient = new HttpClient();
             services.AddSingleton<HttpClient>(httpClient);
 
+
+            services.AddTransient<DBService, DBService>();
             services.AddTransient<Services.IThirdPartySupplierService, Services.ThirdPartySupplierService>();
         }
 

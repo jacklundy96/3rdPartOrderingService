@@ -14,7 +14,6 @@ namespace ThirdPartyOrderingService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize(Roles = "Staff"]
     public class UnderCuttersController : ControllerBase
     {
         private IThirdPartySupplierService _tts;

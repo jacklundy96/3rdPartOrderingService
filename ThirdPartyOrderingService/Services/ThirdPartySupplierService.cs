@@ -12,6 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using Polly;
+
 
 namespace ThirdPartyOrderingService.Services
 {
@@ -42,7 +44,6 @@ namespace ThirdPartyOrderingService.Services
         {
             try
             {
-
                 var values = new Dictionary<string, string>
                 {
                     {"AccountName", order.AccountName},
@@ -51,28 +52,33 @@ namespace ThirdPartyOrderingService.Services
                     {"Quantity", order.Quantity.ToString()}
                 };
 
-                HttpResponseMessage response;
-                do
-                {
-                    var content = new FormUrlEncodedContent(values);
-                    response = await _Client.PostAsync(url + "api/Order", content);
-
-                    string responseBody = await response.Content.ReadAsStringAsync();
-
-                    if (response.StatusCode == HttpStatusCode.Created)
+     
+               var content = new FormUrlEncodedContent(values);
+                //retry pattern with polly
+                var response = await Policy
+                    .HandleResult<HttpResponseMessage>(message => !message.IsSuccessStatusCode)
+                    .WaitAndRetryAsync(6, i => TimeSpan.FromSeconds(2), (result, timeSpan, retryCount, context) =>
                     {
-                        order.OrderId = (int) JObject.Parse(responseBody)["Id"];
-                        order.When = (DateTime) JObject.Parse(responseBody)["When"];
-                        order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
-                        order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
-                        order.TotalPrice = (decimal) JObject.Parse(responseBody)["TotalPrice"];
-                        order.SupplierName = supplierName;
-                        _dbs.SetOrder(order);
+                        Console.WriteLine($"Request failed with {result.Result.StatusCode}. Waiting {timeSpan} before next retry. Retry attempt {retryCount}");
+                    })
+                    .ExecuteAsync(() => _Client.PostAsync(url + "api/Order", content));
 
-                        return new OkResult();
-                    }
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-                } while (response.StatusCode == HttpStatusCode.ServiceUnavailable);
+                if (response.StatusCode == HttpStatusCode.Created)
+                {
+                    order.OrderId = (int)JObject.Parse(responseBody)["Id"];
+                    order.When = (DateTime)JObject.Parse(responseBody)["When"];
+                    order.ProductName = JObject.Parse(responseBody)["ProductName"].ToString();
+                    order.ProductEan = JObject.Parse(responseBody)["ProductEan"].ToString();
+                    order.TotalPrice = (decimal)JObject.Parse(responseBody)["TotalPrice"];
+                    order.SupplierName = supplierName;
+                    _dbs.SetOrder(order);
+
+                    return new OkResult();
+                }
+               
+                return null;
             }
             catch (Exception ex)
             {
@@ -116,10 +122,14 @@ namespace ThirdPartyOrderingService.Services
         {
             Order order = _dbs.GetOrder(OrderID);
 
-            if (order != null && order.SupplierName.Equals(supplierName))
-                return new JsonResult(order);
-            else
+            if (order == null)
                 return new NotFoundResult();
+
+            if (order.SupplierName.Equals(supplierName))
+                return new JsonResult(order);
+
+            return new OkResult();
+
         }
     } 
 }

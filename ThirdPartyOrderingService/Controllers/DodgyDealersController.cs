@@ -29,7 +29,6 @@ namespace ThirdPartyOrderingService.Controllers
         public async Task<IActionResult> Order([FromBody]Order order)
         {
             order.SupplierName = SupplierName;
-
             return await _tts.MakeOrderAsync(order, _url, SupplierName);
         }
 
